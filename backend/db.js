@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { number } = require('zod');
 require('dotenv').config();
 
 (async ()=>{
@@ -26,12 +27,14 @@ const UserSchema = mongoose.Schema({
         type: String,
         required: true,
         trim: true,
+        lowercase: true,
         maxLength: 50
     },
     lastName: {
         type: String,
         required: true,
         trim: true,
+        lowercase: true,
         maxLength: 50
     },
     password: {
@@ -41,8 +44,22 @@ const UserSchema = mongoose.Schema({
     }
 })
 
+const accountSchema = mongoose.Schema({
+    balance: {
+        type: Number,
+        required: true
+    },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users',
+        required: true
+    }
+})
+
 const users = mongoose.model('Users', UserSchema);
+const account = mongoose.model('Accounts',accountSchema);
 
 module.exports= {
-    users
+    users,
+    account
 }

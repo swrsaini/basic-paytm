@@ -2,7 +2,9 @@ const express = require('express')
 const zod = require('zod')
 const jwt = require('jsonwebtoken');
 const {JWT_SECRET} = require('../config')
-const {users} = require('../db')
+const {users, account} = require('../db');
+const {authMiddleware} = require('../middleware');
+
 const userRouter = express.Router();
 
 const signUpBody = zod.object({
@@ -35,6 +37,11 @@ userRouter.post('/signup', async (req,res)=>{
         })
 
         const userId = user._id;
+
+        await account.create({
+            balance: 1 + (Math.random()*10000),
+            userId: userId
+        })
 
         const token =  jwt.sign({userId},JWT_SECRET);
 
@@ -72,6 +79,55 @@ userRouter.get('/signin', async (req,res)=> {
     }
     catch(err){
         res.status(411).json({msg: 'error'})
+    }
+})
+
+const updateBody = zod.object({
+    firstName: zod.string().max(50).optional(),
+    lastName: zod.string().max(50).optional(),
+    password: zod.string().min(8).optional()
+})
+
+userRouter.put('/', authMiddleware, async(req,res)=>{
+    const {success, data} = updateBody.safeParse(req.body);
+    if(!success){
+        return res.status(403).json({});
+    }
+    const userId = req.userId;
+    try{
+        await users.findOneAndUpdate({_id: userId}, data);
+        res.json({msg: "updated"});
+
+    }
+    catch(err){
+        res.status(400).json({});
+    }
+})
+
+userRouter.get('/bulk', async(req,res)=>{
+    const search = req.query.search || "";
+    try{
+        const result = await users.find({
+            $or:[{
+                firstName: {
+                    "$regex": search
+                }
+            },{
+                lastName: {
+                    "$regex": search
+                }
+            }]
+        })
+        res.json(result)
+        // res.json({
+        //     user: result.map(user => ({
+        //     username: user.username,
+        //     firstName: user.firstName,
+        //     lastName: user.lastName,
+        // }))})
+    }
+    catch(err){
+        res.json("error")
     }
 })
 
