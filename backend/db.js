@@ -1,42 +1,48 @@
-const mongoose = require('mongoose')
-const DB_URI = process.env.DB_URI;
+const mongoose = require('mongoose');
+require('dotenv').config();
 
-mongoose.connect(DB_URI);
+(async ()=>{
+    try{
+        await mongoose.connect(process.env.DB_URI);
+        console.log('db connected')
+    }
+    catch(err){
+        console.log(err)
+    }
+    
+})();   
 
-const userSchema = new mongoose.Schema({
-    userName: {
+const UserSchema = mongoose.Schema({
+    username: {
         type: String,
         required: true,
+        unique: true,
         trim: true,
-        minLength: 3,
-        maxLength: 30,
         lowercase: true,
-        unique: true
+        minLength: 3,
+        maxLength: 30
     },
     firstName: {
         type: String,
         required: true,
         trim: true,
-        lowercase: true,
-        maxLength: 50,
+        maxLength: 50
     },
     lastName: {
         type: String,
         required: true,
         trim: true,
-        lowercase: true,
-        maxLength: 50,
+        maxLength: 50
     },
     password: {
         type: String,
         required: true,
-        trim: true,
         minLength: 8
     }
 })
 
-const User = new mongoose.model('User',userSchema);
+const users = mongoose.model('Users', UserSchema);
 
-module.exports = {
-    User
+module.exports= {
+    users
 }

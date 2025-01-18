@@ -1,2 +1,3 @@
-const JWT_SECRET = 'shubham_secret'
-module.exports = JWT_SECRET
+JWT_SECRET = 'Shubham123'
+
+module.exports = {JWT_SECRET}
